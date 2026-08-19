@@ -23,8 +23,8 @@ def run_ps1(ps: str) -> None:
         with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
             f.write(ps)
         subprocess.run(
-            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", path],
-            capture_output=True, timeout=60,
+            ["powershell", "-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", path],
+            capture_output=True, timeout=60, creationflags=0x08000000,  # CREATE_NO_WINDOW：禁止弹出控制台
         )
     finally:
         try:
@@ -72,7 +72,7 @@ def show_banner(title: str, text: str, image: str, seconds: int = 25) -> None:
         f"$title.Text = '{t}'\n"
         "$title.Font = New-Object System.Drawing.Font('Microsoft YaHei', 11, [System.Drawing.FontStyle]::Bold)\n"
         "$title.Location = New-Object System.Drawing.Point(12, 10)\n"
-        "$title.Size = New-Object System.Drawing.Size(296, 24)\n"
+        "$title.Size = New-Object System.Drawing.Size(268, 24)\n"
         "$script:form.Controls.Add($title)\n"
         "$pic = New-Object System.Windows.Forms.PictureBox\n"
         f"$pic.Image = [System.Drawing.Image]::FromFile('{img}')\n"
@@ -97,6 +97,16 @@ def show_banner(title: str, text: str, image: str, seconds: int = 25) -> None:
         "}\n"
         "$script:dragging = $false; $script:moved = $false\n"
         "Add-Drag $script:form; Add-Drag $title; Add-Drag $pic; Add-Drag $lbl\n"
+        "# 右上角关闭按钮（✕）\n"
+        "$btn = New-Object System.Windows.Forms.Button\n"
+        "$btn.Text = '✕'\n"
+        "$btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat\n"
+        "$btn.FlatAppearance.BorderSize = 0\n"
+        "$btn.Location = New-Object System.Drawing.Point(($script:form.Width - 34), 6)\n"
+        "$btn.Size = New-Object System.Drawing.Size(28, 24)\n"
+        "$btn.Cursor = [System.Windows.Forms.Cursors]::Hand\n"
+        "$btn.Add_Click({ $script:form.Close() })\n"
+        "$script:form.Controls.Add($btn)\n"
         f"$timer = New-Object System.Windows.Forms.Timer; $timer.Interval = {seconds * 1000}\n"
         "$timer.Add_Tick({ $script:form.Close() }); $timer.Start()\n"
         "# 关闭时记忆位置\n"

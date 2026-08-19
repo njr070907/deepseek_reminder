@@ -35,8 +35,8 @@ def run_ps(ps: str) -> None:
         with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
             f.write(ps)
         subprocess.run(
-            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", path],
-            capture_output=True, timeout=120,
+            ["powershell", "-NoProfile", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", path],
+            capture_output=True, timeout=120, creationflags=0x08000000,  # CREATE_NO_WINDOW：禁止弹出控制台
         )
     finally:
         try:
