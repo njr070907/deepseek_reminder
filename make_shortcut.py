@@ -12,7 +12,8 @@ import tempfile
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ICON_JPG = os.path.join(BASE_DIR, "图标.jpg")
-ICON_ICO = os.path.join(BASE_DIR, "图标.ico")
+# 独立文件名用于绕过 Windows 图标缓存（同一路径的 .ico 改内容不生效）
+ICON_ICO = os.path.join(BASE_DIR, "deepseek_icon.ico")
 SHORTCUT_NAME = "deepseek_reminder"
 
 
