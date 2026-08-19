@@ -74,3 +74,6 @@ python time_mode.py --selftest
 - 本机 git-bash 的 `date` 会忽略 `TZ=Asia/Shanghai` 并回退为 UTC（无时区数据库）。
   判时间请用 `python time_mode.py --now` 或本机 Windows 本地时间（已是中国标准时间）。
 - 脚本只认传入的北京时间；机器时钟若不准，以网络时间 API（如 timeapi.io）为准校准。
+- 直连 GitHub 偶发不通（亚洲节点 20.205.243.166 常被干扰）：git 已配置走本地代理
+  `http://127.0.0.1:7897`；若代理关闭导致推送失败，恢复直连用
+  `git config --global --unset http.proxy`。
