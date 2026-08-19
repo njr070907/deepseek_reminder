@@ -13,6 +13,7 @@ import tempfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ICON_JPG = os.path.join(BASE_DIR, "图标.jpg")
 ICON_ICO = os.path.join(BASE_DIR, "图标.ico")
+SHORTCUT_NAME = "deepseek_reminder"
 
 
 def run_ps(ps: str) -> None:
@@ -63,7 +64,7 @@ def main() -> int:
     if not os.path.exists(pythonw):
         pythonw = sys.executable  # 退化：python.exe（双击会闪一下控制台）
     desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-    lnk = os.path.join(desktop, "当前模式.lnk")
+    lnk = os.path.join(desktop, SHORTCUT_NAME + ".lnk")
     script = os.path.join(BASE_DIR, "status_check.py")
     icon_line = f"$lnk.IconLocation = '{ICON_ICO}'\n" if has_icon else ""
     ps = (
