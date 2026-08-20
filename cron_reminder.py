@@ -9,6 +9,8 @@
   其余时间输出为空 → cron 静默（不发消息）。
 - 本任务随 Hermes 进程生命周期运行（调度器在 Hermes 进程内）：
   Hermes 未运行时不会触发。
+- 仅当 Hermes 配置的模型为 DeepSeek v4（pro/flash）时触发（模型门槛见 model_gate.py）；
+  其他模型一律静默。--force 仅绕过时间窗口，模型门槛仍生效。
 - 横幅实现见 banner_ui.py（与 status_check.py 共用）；show_toast 为备用系统通知。
 - --force: 无视时间窗口强制触发（仅用于测试）。
 
@@ -18,6 +20,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 from banner_ui import run_ps1, show_banner
+from model_gate import is_deepseek_v4_active
 
 BEIJING_TZ = timezone(timedelta(hours=8))
 
@@ -74,6 +77,10 @@ def show_toast(text: str) -> None:
 
 def main() -> int:
     force = "--force" in sys.argv
+    # 模型门槛：非 DeepSeek v4（pro/flash）一律静默
+    if not is_deepseek_v4_active():
+        print("[跳过] 当前模型非 DeepSeek v4（仅 deepseek-v4 pro/flash 生效）", file=sys.stderr)
+        return 0
     now = datetime.now(BEIJING_TZ)
     if not (force or in_reminder_window(now)):
         return 0  # 窗口外：静默（空输出 = cron 不发送）

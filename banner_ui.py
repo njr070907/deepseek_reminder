@@ -33,13 +33,26 @@ def run_ps1(ps: str) -> None:
             pass
 
 
-def show_banner(title: str, text: str, image: str, seconds: int = 25) -> None:
+def show_banner(title: str, text: str, image: str = "", seconds: int = 25) -> None:
     """右下角横幅：配图+标题+文案，静音；可拖动、点击即关、自动消失；
-    位置自动记忆（banner_pos.txt），默认在工作区（任务栏上方）右下角。"""
-    img = image.replace("\\", "\\\\")
+    位置自动记忆（banner_pos.txt），默认在工作区（任务栏上方）右下角。
+    image 为空时只显示标题+文字（无图布局）。"""
     pos_file = r"D:\liangwen-mode\banner_pos.txt"
     t = title.replace("'", "''")
     x = text.replace("'", "''")
+    img_block = ""
+    if image:
+        img = image.replace("\\", "\\\\")
+        img_block = (
+            "$pic = New-Object System.Windows.Forms.PictureBox\n"
+            f"$pic.Image = [System.Drawing.Image]::FromFile('{img}')\n"
+            "$pic.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom\n"
+            "$pic.Location = New-Object System.Drawing.Point(12, 40)\n"
+            "$pic.Size = New-Object System.Drawing.Size(296, 180)\n"
+            "$script:form.Controls.Add($pic)\n"
+        )
+    lbl_y = 228 if image else 40
+    lbl_h = 60 if image else 200
     ps = (
         "Add-Type -AssemblyName System.Windows.Forms\n"
         "Add-Type -AssemblyName System.Drawing\n"
@@ -74,19 +87,14 @@ def show_banner(title: str, text: str, image: str, seconds: int = 25) -> None:
         "$title.Location = New-Object System.Drawing.Point(12, 10)\n"
         "$title.Size = New-Object System.Drawing.Size(268, 24)\n"
         "$script:form.Controls.Add($title)\n"
-        "$pic = New-Object System.Windows.Forms.PictureBox\n"
-        f"$pic.Image = [System.Drawing.Image]::FromFile('{img}')\n"
-        "$pic.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom\n"
-        "$pic.Location = New-Object System.Drawing.Point(12, 40)\n"
-        "$pic.Size = New-Object System.Drawing.Size(296, 180)\n"
-        "$script:form.Controls.Add($pic)\n"
-        "$lbl = New-Object System.Windows.Forms.Label\n"
-        f"$lbl.Text = '{x}'\n"
-        "$lbl.Font = New-Object System.Drawing.Font('Microsoft YaHei', 10)\n"
-        "$lbl.Location = New-Object System.Drawing.Point(12, 228)\n"
-        "$lbl.Size = New-Object System.Drawing.Size(296, 60)\n"
-        "$lbl.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft\n"
-        "$script:form.Controls.Add($lbl)\n"
+        + img_block
+        + "$lbl = New-Object System.Windows.Forms.Label\n"
+        + f"$lbl.Text = '{x}'\n"
+        + "$lbl.Font = New-Object System.Drawing.Font('Microsoft YaHei', 10)\n"
+        + f"$lbl.Location = New-Object System.Drawing.Point(12, {lbl_y})\n"
+        + f"$lbl.Size = New-Object System.Drawing.Size(296, {lbl_h})\n"
+        + "$lbl.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft\n"
+        + "$script:form.Controls.Add($lbl)\n"
         "# 拖动支持（窗口和所有子控件都可拖；位移>4px 视为拖动，不算点击）\n"
         "function Add-Drag {\n"
         "    param($ctrl)\n"
@@ -112,6 +120,6 @@ def show_banner(title: str, text: str, image: str, seconds: int = 25) -> None:
         "# 关闭时记忆位置\n"
         "$script:form.Add_FormClosed({ param($s, $e) \"$($script:form.Location.X),$($script:form.Location.Y)\" | Out-File $posFile -Encoding UTF8 })\n"
         "[System.Windows.Forms.Application]::Run($script:form)\n"
-        "if ($pic.Image) { $pic.Image.Dispose() }\n"
+        "if ($pic -and $pic.Image) { $pic.Image.Dispose() }\n"
     )
     run_ps1(ps)

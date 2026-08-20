@@ -5,12 +5,15 @@
 
 - 判定当前北京时间 → 弹横幅：当前模式 + 对应图片 + 距下次切换时间
 - 梁文谷时间 → 小南梁.jpg；梁文峰时间 → 梁圣.jpg
-- 用法：双击桌面「当前模式」快捷方式，或命令行 `python status_check.py`
+- 仅当 Hermes 配置为 DeepSeek v4（pro/flash）时生效（模型门槛 model_gate.py）；
+  其他模型时提示"时间模式未启用"（无图）。
+- 用法：双击桌面「deepseek_reminder」快捷方式，或命令行 `python status_check.py`
 """
 import sys
 from datetime import datetime, timedelta, timezone
 
 from banner_ui import show_banner
+from model_gate import is_deepseek_v4_active
 from time_mode import MINIMAL, NORMAL, get_mode
 
 BEIJING_TZ = timezone(timedelta(hours=8))
@@ -31,6 +34,12 @@ def next_switch_text(now: datetime) -> str:
 
 
 def main() -> int:
+    # 模型门槛：非 DeepSeek v4（pro/flash）时提示未启用，不展示模式
+    if not is_deepseek_v4_active():
+        msg = "当前模型不是 DeepSeek v4（仅 deepseek-v4 pro/flash 生效），时间模式未启用。"
+        print(msg)
+        show_banner(title="时间模式", text=msg, image="", seconds=15)
+        return 0
     now = datetime.now(BEIJING_TZ)
     mode, remind = get_mode(now.strftime("%H:%M:%S"))
     nxt = next_switch_text(now)
